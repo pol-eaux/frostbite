@@ -34,10 +34,13 @@ public class Player : MonoBehaviour
 
         // Get character input and update it.
         var characterInput = new CharacterInput
-        { 
-            Rotation = playerCamera.transform.rotation, 
-            Move = input.Move.ReadValue<Vector2>()
+        {
+            Rotation = playerCamera.transform.rotation,
+            Move = input.Move.ReadValue<Vector2>(),
+            Jump = input.Jump.WasPressedThisFrame(),
+            Crouch = input.Crouch.WasPressedThisFrame() ? CrouchInput.Toggle : CrouchInput.None
         };
         playerCharacter.UpdateInput(characterInput);
+        playerCharacter.UpdateBody();
     }
 }
