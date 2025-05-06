@@ -4,6 +4,9 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private PlayerCharacter playerCharacter;
     [SerializeField] private PlayerCamera playerCamera;
+    [Space]
+
+    [SerializeField] private CameraSpring cameraSpring;
 
     private PlayerInputActions _inputActions;
 
@@ -16,6 +19,8 @@ public class Player : MonoBehaviour
 
         playerCharacter.Initialize();
         playerCamera.Initialize(playerCharacter.GetCameraTarget());
+
+        cameraSpring.Initialize();
     }
 
     private void OnDestroy()
@@ -26,6 +31,7 @@ public class Player : MonoBehaviour
     void Update()
     {
         var input = _inputActions.Gameplay;
+        var deltaTime = Time.deltaTime;
 
         // Get camera input and update its rotation.
         var cameraInput = new CameraInput { Look = input.Look.ReadValue<Vector2>() };
@@ -41,6 +47,13 @@ public class Player : MonoBehaviour
             Crouch = input.Crouch.WasPressedThisFrame() ? CrouchInput.Toggle : CrouchInput.None
         };
         playerCharacter.UpdateInput(characterInput);
-        playerCharacter.UpdateBody();
+        playerCharacter.UpdateBody(deltaTime);
+    }
+
+    private void LateUpdate()
+    {
+        var deltaTime = Time.deltaTime;
+        var cameraTarget = playerCharacter.GetCameraTarget();
+        cameraSpring.UpdateSpring(deltaTime, cameraTarget.up);
     }
 }

@@ -31,6 +31,8 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     [SerializeField] private float walkSpeed = 20f;
     [SerializeField] private float crouchSpeed = 10f;
+    [SerializeField] private float walkResponse = 25f;
+    [SerializeField] private float crouchResponse = 20f;
     [Space]
 
     [SerializeField] private float jumpSpeed = 20f;
@@ -39,6 +41,7 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
 
     [SerializeField] private float standHeight = 2f;
     [SerializeField] private float crouchHeight = 1f;
+    [SerializeField] private float crouchHeightResponse = 15f;
     [SerializeField, Range(0f, 1f)] private float standCameraTargetHeight = 1f;
     [SerializeField, Range(0f, 1f)] private float crouchCameraTargetHeight = 0.7f;
 
@@ -77,15 +80,15 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
         };
     }
 
-    public void UpdateBody()
+    public void UpdateBody(float deltaTime)
     {
         var currentHeight = motor.Capsule.height;
         var normalizedHeight = currentHeight / standHeight;
         var cameraTargetHeight = currentHeight * (_stance is Stance.Stand ? standCameraTargetHeight : crouchCameraTargetHeight);
         var rootTargetScale = new Vector3(1f, normalizedHeight, 1f);
 
-        cameraTarget.localPosition = new Vector3(0f, cameraTargetHeight, 0f);
-        root.localScale = rootTargetScale;
+        cameraTarget.localPosition = Vector3.Lerp(a: cameraTarget.localPosition, b: new Vector3(0f, cameraTargetHeight, 0f), t: 1f - Mathf.Exp(-crouchHeightResponse * deltaTime));
+        root.localScale = Vector3.Lerp(a: root.localScale, b: rootTargetScale, t: 1f - Mathf.Exp(-crouchHeightResponse * deltaTime));
     }
 
     public void AfterCharacterUpdate(float deltaTime)
@@ -192,11 +195,13 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController
                 surfaceNormal: motor.GroundingStatus.GroundNormal
             ) * _requestedMovement.magnitude;
 
-            // Determine speed based on stance.
+            // Determine speed and response based on stance.
             var speed = _stance is Stance.Stand ? walkSpeed : crouchSpeed;
+            var response = _stance is Stance.Stand ? walkResponse : crouchResponse;
 
             // Move along the ground in that direction.
-            currentVelocity = groundedMovement * speed;
+            var targetVelocity = groundedMovement * speed;
+            currentVelocity = Vector3.Lerp(a: currentVelocity, b: targetVelocity, t: 1f - Mathf.Exp(-response * deltaTime));
         }
         // Else, in the air:
         else
