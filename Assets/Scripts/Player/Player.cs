@@ -7,6 +7,7 @@ public class Player : MonoBehaviour
     [Space]
 
     [SerializeField] private CameraSpring cameraSpring;
+    [SerializeField] private CameraBob cameraBob;
 
     private PlayerInputActions _inputActions;
 
@@ -21,6 +22,7 @@ public class Player : MonoBehaviour
         playerCamera.Initialize(playerCharacter.GetCameraTarget());
 
         cameraSpring.Initialize();
+        cameraBob.Initialize();
     }
 
     private void OnDestroy()
@@ -55,5 +57,6 @@ public class Player : MonoBehaviour
         var deltaTime = Time.deltaTime;
         var cameraTarget = playerCharacter.GetCameraTarget();
         cameraSpring.UpdateSpring(deltaTime, cameraTarget.up);
+        cameraBob.UpdateBob(deltaTime);
     }
 }
