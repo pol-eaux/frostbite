@@ -15,13 +15,13 @@ public class PlayerJump : MonoBehaviour
     /// <param name="jumpPressed"> Jump input. </param>
     /// <param name="isGrounded"> Character grounding. </param>
     /// <returns></returns>
-    public float UpdateGravity(float deltaTime, bool jumpPressed, bool isGrounded)
+    public float UpdateGravity(float deltaTime, bool jumpPressed, bool isGrounded, bool crouchPressed)
     {
         // If the player is grounded.
         if(isGrounded)
         {
-            // If the player jump button is also pressed, jump.
-            if(jumpPressed)
+            // If the player jump button pressed and the player is not crouching, jump.
+            if(jumpPressed && !crouchPressed)
             {
                 _verticalVelocity = jumpForce;
             }

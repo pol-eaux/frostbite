@@ -117,7 +117,7 @@ public class PlayerManager : MonoBehaviour
     private void Move(float deltaTime)
     {
         // Get vertical movement (apply gravity and or jump).
-        float verticalVelocity = playerJump.UpdateGravity(deltaTime, _jumpPressed, _isGrounded);
+        float verticalVelocity = playerJump.UpdateGravity(deltaTime, _jumpPressed, _isGrounded, _crouchPressed);
         // Get horizontal movement.
         Vector3 horizontalMovement = playerMovement.UpdateMove(deltaTime, _moveInput, ref currentVelocity, _crouchPressed, _sprintPressed);
         // Combine them for the final movement vector.
