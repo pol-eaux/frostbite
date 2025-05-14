@@ -4,15 +4,13 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float walkSpeed = 10f;
     [SerializeField] private float acceleration = 50f;
-    [SerializeField] private float deceleration = 15f;
-
-    private Vector3 _lastPosition = Vector3.zero;
+    [SerializeField] private float deceleration = 40f;
 
     /// <summary>
     /// Calculates a Vector3 to move the character controller with.
     /// Accounts for walk speed.
     /// </summary>
-    /// <param name="deltaTime"></param>
+    /// <param name="deltaTime"> Global delta time. </param>
     /// <param name="moveInput"> A Vector2 with values from the input system. </param>
     /// <returns> A Vector3 with values used to move the character controller. </returns>
     public Vector3 UpdateMove(float deltaTime, Vector2 moveInput, ref Vector3 currentVelocity)
@@ -37,7 +35,7 @@ public class PlayerMovement : MonoBehaviour
         float rate = move.sqrMagnitude > 0.1f ? acceleration : deceleration;
         currentVelocity = Vector3.MoveTowards(currentVelocity, targetVelocity, rate * deltaTime);
 
-        // Apply speed, return.
+        // Return.
         return currentVelocity * deltaTime;
     }
 }
