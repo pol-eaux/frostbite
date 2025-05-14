@@ -9,11 +9,15 @@ using UnityEngine.InputSystem;
 public class PlayerManager : MonoBehaviour
 {
     [Header("Components")]
-    [SerializeField] InputActionAsset inputActions;
-    [SerializeField] PlayerMovement playerMovement;
-    [SerializeField] PlayerLook playerLook;
-    [SerializeField] PlayerJump playerJump;
-    [SerializeField] PlayerCrouch playerCrouch;
+    [SerializeField] private InputActionAsset inputActions;
+    [SerializeField] private PlayerMovement playerMovement;
+    [SerializeField] private PlayerLook playerLook;
+    [SerializeField] private PlayerJump playerJump;
+    [SerializeField] private PlayerCrouch playerCrouch;
+
+    [Header("Transforms")]
+    [SerializeField] private Transform characterModel;
+    [SerializeField] private Transform cameraAnchor;
 
     private CharacterController _characterController;
 
@@ -143,9 +147,9 @@ public class PlayerManager : MonoBehaviour
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="deltaTime"></param>
+    /// <param name="deltaTime"> Global delta time </param>
     private void Crouch(float deltaTime)
     {
-        
+
     }
 }

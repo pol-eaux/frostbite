@@ -307,6 +307,8 @@ MonoBehaviour:
   playerLook: {fileID: 1605630380}
   playerJump: {fileID: 81316111}
   playerCrouch: {fileID: 81316112}
+  characterModel: {fileID: 781163585}
+  cameraAnchor: {fileID: 1605630379}
 --- !u!114 &81316110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -351,6 +353,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f175d7eb92033ae4ab0743d0c1ebe6dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  StandingHeight: 2
+  crouchingHeight: 2
 --- !u!1 &108149448
 GameObject:
   m_ObjectHideFlags: 0
