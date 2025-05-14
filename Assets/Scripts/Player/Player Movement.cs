@@ -2,7 +2,9 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [SerializeField] private float sprintSpeed = 12f;
     [SerializeField] private float walkSpeed = 10f;
+    [SerializeField] private float crouchWalkSpeed = 5f;
     [SerializeField] private float acceleration = 50f;
     [SerializeField] private float deceleration = 40f;
 
@@ -13,10 +15,10 @@ public class PlayerMovement : MonoBehaviour
     /// <param name="deltaTime"> Global delta time. </param>
     /// <param name="moveInput"> A Vector2 with values from the input system. </param>
     /// <returns> A Vector3 with values used to move the character controller. </returns>
-    public Vector3 UpdateMove(float deltaTime, Vector2 moveInput, ref Vector3 currentVelocity)
+    public Vector3 UpdateMove(float deltaTime, Vector2 moveInput, ref Vector3 currentVelocity, bool crouched, bool sprinting)
     {
-        // Get the correct speed, account for crouching later.
-        float speed = walkSpeed;
+        // Get the correct speed.
+        float speed = calculateSpeed(crouched, sprinting);
 
         // Get move inputs.
         float x = moveInput.x;
@@ -37,5 +39,30 @@ public class PlayerMovement : MonoBehaviour
 
         // Return.
         return currentVelocity * deltaTime;
+    }
+
+    /// <summary>
+    /// Returns the correct speed float based on the state of the player.
+    /// </summary>
+    /// <param name="crouched"> Is the player crouching? </param>
+    /// <param name="sprinting"> Is the player sprinting? </param>
+    /// <returns></returns>
+    private float calculateSpeed(bool crouched, bool sprinting)
+    {
+        // If the player is crouched, use the crouch walk speed.
+        if (crouched)
+        {
+            return crouchWalkSpeed;
+        }
+        // If the player is sprinting, use the sprinting speed.
+        else if (sprinting)
+        {
+            return sprintSpeed;
+        }
+        // Otherwise return the walk speed.
+        else
+        {
+            return walkSpeed;
+        }
     }
 }

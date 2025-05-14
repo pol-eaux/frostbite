@@ -13,6 +13,7 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] PlayerMovement playerMovement;
     [SerializeField] PlayerLook playerLook;
     [SerializeField] PlayerJump playerJump;
+    [SerializeField] PlayerCrouch playerCrouch;
 
     private CharacterController _characterController;
 
@@ -20,6 +21,8 @@ public class PlayerManager : MonoBehaviour
     private InputAction _moveAction;
     private InputAction _lookAction;
     private InputAction _jumpAction;
+    private InputAction _crouchAction;
+    private InputAction _sprintAction;
 
     // Inputs from the input system.
     private Vector2 _moveInput;
@@ -27,6 +30,10 @@ public class PlayerManager : MonoBehaviour
 
     // Jump input.
     private bool _jumpPressed;
+    // Crouch input.
+    private bool _crouchPressed;
+    // Sprint input.
+    private bool _sprintPressed;
     // Is the player grounded this frame?
     private bool _isGrounded;
 
@@ -45,6 +52,8 @@ public class PlayerManager : MonoBehaviour
         _moveAction = gameplayMap.FindAction("Move");
         _lookAction = gameplayMap.FindAction("Look");
         _jumpAction = gameplayMap.FindAction("Jump");
+        _crouchAction = gameplayMap.FindAction("Crouch");
+        _sprintAction = gameplayMap.FindAction("Sprint");
 
         // Get character controller.
         _characterController = GetComponent<CharacterController>();
@@ -52,6 +61,8 @@ public class PlayerManager : MonoBehaviour
         // Initialize bools.
         _isGrounded = _characterController.isGrounded;
         _jumpPressed = false;
+        _crouchPressed = false;
+        _sprintPressed = false;
     }
 
     private void Start()
@@ -71,6 +82,7 @@ public class PlayerManager : MonoBehaviour
         // Call player component scripts.
         Move(deltaTime);
         Look(deltaTime);
+        Crouch(deltaTime);
     }
 
     private void OnDisable()
@@ -87,6 +99,10 @@ public class PlayerManager : MonoBehaviour
         _isGrounded = _characterController.isGrounded;
         // Was jump pressed this frame?
         _jumpPressed = _jumpAction.WasPressedThisFrame();
+        // Was crouch held this frame?
+        _crouchPressed = _crouchAction.IsPressed();
+        // Was sprint held this frame?
+        _sprintPressed = _sprintAction.IsPressed();
 
         // Read inputs:
         _moveInput = _moveAction.ReadValue<Vector2>();
@@ -103,7 +119,7 @@ public class PlayerManager : MonoBehaviour
         // Get vertical movement (apply gravity and or jump).
         float verticalVelocity = playerJump.UpdateGravity(deltaTime, _jumpPressed, _isGrounded);
         // Get horizontal movement.
-        Vector3 horizontalMovement = playerMovement.UpdateMove(deltaTime, _moveInput, ref currentVelocity);
+        Vector3 horizontalMovement = playerMovement.UpdateMove(deltaTime, _moveInput, ref currentVelocity, _crouchPressed, _sprintPressed);
         // Combine them for the final movement vector.
         Vector3 finalMovement = new Vector3(horizontalMovement.x, verticalVelocity * deltaTime, horizontalMovement.z);
 
@@ -122,5 +138,14 @@ public class PlayerManager : MonoBehaviour
         playerLook.UpdateLook(deltaTime, _lookInput);
         // Rotate the player object along the y-axis by getting the y-rotation calculated in the update look funciton.
         transform.localRotation = Quaternion.Euler(0f, playerLook.GetYRotation(), 0f);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="deltaTime"></param>
+    private void Crouch(float deltaTime)
+    {
+        
     }
 }
