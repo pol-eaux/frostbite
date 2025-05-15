@@ -10,6 +10,9 @@ public class PlayerCrouch : MonoBehaviour
     [Space]
     [SerializeField] private float crouchTransitionSpeed = 5f;
 
+    [Space]
+    [SerializeField] private float headCheckTolerance = 0.51f;
+
     // The y value for the character controller center vector.
     private float _crouchCenter;
     private float _standCenter;
@@ -28,6 +31,9 @@ public class PlayerCrouch : MonoBehaviour
     private CharacterController _characterController;
     private Transform _modelTransform;
     private Transform _cameraTransform;
+
+    // Collision.
+    private int _layerMask;
 
     /// <summary>
     /// Provides the player crouch component with everything it needs to work.
@@ -49,6 +55,9 @@ public class PlayerCrouch : MonoBehaviour
         _currentCenter = _characterController.center.y;
         _currentScale = _modelTransform.localScale.y;
         _currentCameraHeight = _cameraTransform.localPosition.y;
+
+        // Prevent the head checker from interacting with the player.
+        _layerMask = ~LayerMask.GetMask("Player");
     }
 
     /// <summary>
@@ -60,6 +69,11 @@ public class PlayerCrouch : MonoBehaviour
     /// <param name="isGrounded"> Grounded bool from the character controller. </param>
     public void UpdateStance(float deltaTime, bool crouchPressed, bool isGrounded)
     {
+        // Calculate where the ray should cast from.
+        Vector3 castOrigin = transform.position + new Vector3(0, standHeight - headCheckTolerance, 0);
+        // Check if the player is blocked from standing.
+        bool blocked = Physics.CheckSphere(castOrigin, headCheckTolerance, _layerMask, QueryTriggerInteraction.Ignore);
+
         // Early exit if already in the target stance.
         if (!crouchPressed && Mathf.Approximately(_currentHeight, standHeight))
             return;
@@ -76,7 +90,8 @@ public class PlayerCrouch : MonoBehaviour
         float crouchDelta = deltaTime * crouchTransitionSpeed;
 
         // If the player is holding crouch and is grounded, use crouch variables.
-        if(crouchPressed && isGrounded)
+        // If the player is blocked from above, the player should stay crouched.
+        if((crouchPressed && isGrounded) || blocked)
         {
             heightTarget = crouchHeight;
             centerTarget = _crouchCenter;
