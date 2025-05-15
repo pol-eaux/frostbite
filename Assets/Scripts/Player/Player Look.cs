@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.LowLevel;
 
 public class PlayerLook : MonoBehaviour
 {
@@ -8,6 +9,18 @@ public class PlayerLook : MonoBehaviour
 
     private float _xRotation = 0f;
     private float _yRotation = 0f;
+
+    private Transform _playerTransform;
+
+    /// <summary>
+    /// Provide the component with reference to the player object so that
+    /// it can preform y rotation.
+    /// </summary>
+    /// <param name="playerTransform"></param>
+    public void Initialize(Transform playerTransform)
+    {
+        _playerTransform = playerTransform;
+    }
 
     /// <summary>
     /// Rotates the camera along the x-axis based on input look values.
@@ -30,11 +43,10 @@ public class PlayerLook : MonoBehaviour
         // Rotation around the y axis (look left and right).
         _yRotation += mouseX;
 
-        // Apply rotation.
+        // Apply rotation to camera.
         transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
+        // Apply rotation to player.
+        _playerTransform.localRotation = Quaternion.Euler(0f, _yRotation, 0f);
+
     }
-
-
-    /// <returns> An update y rotation float value. </returns>
-    public float GetYRotation() => _yRotation;
 }

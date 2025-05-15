@@ -16,8 +16,8 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private PlayerCrouch playerCrouch;
 
     [Header("Transforms")]
-    [SerializeField] private Transform characterModel;
-    [SerializeField] private Transform cameraAnchor;
+    [SerializeField] private Transform modelTransform;
+    [SerializeField] private Transform cameraTransform;
 
     private CharacterController _characterController;
 
@@ -67,6 +67,9 @@ public class PlayerManager : MonoBehaviour
         _jumpPressed = false;
         _crouchPressed = false;
         _sprintPressed = false;
+
+        playerLook.Initialize(this.transform);
+        playerCrouch.Initialize(_characterController, modelTransform, cameraTransform);
     }
 
     private void Start()
@@ -133,23 +136,22 @@ public class PlayerManager : MonoBehaviour
 
     /// <summary>
     /// Rotates the camera along the x-axis using the UpdateLook function in the PlayerLook component.
-    /// Rotates this object along the y-axis using a value updated by running the UpdateLook function.
+    /// Rotates this object along the y-axis by changing this objects rotation.
     /// </summary>
     /// <param name="deltaTime"> Global delta time </param>
     private void Look(float deltaTime)
     {
-        // Rotate the player camera along the x-axis by calling the update function in the player look script.
+        // Rotate the player camera along the x-axis and this by the y-axis by calling the update look funcion in the player look component.
         playerLook.UpdateLook(deltaTime, _lookInput);
-        // Rotate the player object along the y-axis by getting the y-rotation calculated in the update look funciton.
-        transform.localRotation = Quaternion.Euler(0f, playerLook.GetYRotation(), 0f);
     }
 
     /// <summary>
-    /// 
+    /// Call the update stance function from the player crouch component.
     /// </summary>
     /// <param name="deltaTime"> Global delta time </param>
     private void Crouch(float deltaTime)
     {
-
+        // Change the character controller height, center, model scale, and camera height from this funciton.
+        playerCrouch.UpdateStance(deltaTime, _crouchPressed, _isGrounded);
     }
 }
