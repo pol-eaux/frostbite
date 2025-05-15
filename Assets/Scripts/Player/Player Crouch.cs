@@ -61,7 +61,7 @@ public class PlayerCrouch : MonoBehaviour
     public void UpdateStance(float deltaTime, bool crouchPressed, bool isGrounded)
     {
         // Early exit if already in the target stance.
-        if (!crouchPressed && Mathf.Approximately(_currentHeight, standHeight) && isGrounded)
+        if (!crouchPressed && Mathf.Approximately(_currentHeight, standHeight))
             return;
         if (crouchPressed && Mathf.Approximately(_currentHeight, crouchHeight))
             return;
@@ -75,8 +75,8 @@ public class PlayerCrouch : MonoBehaviour
         // For smooth transition.
         float crouchDelta = deltaTime * crouchTransitionSpeed;
 
-        // If the player is holding crouch, use crouch variables.
-        if(crouchPressed)
+        // If the player is holding crouch and is grounded, use crouch variables.
+        if(crouchPressed && isGrounded)
         {
             heightTarget = crouchHeight;
             centerTarget = _crouchCenter;
