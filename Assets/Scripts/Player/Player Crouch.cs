@@ -7,6 +7,9 @@ public class PlayerCrouch : MonoBehaviour
     [SerializeField] private float standHeight = 2f;
     [SerializeField] private float cameraStandHeight = 1.5f;
 
+    [Space]
+    [SerializeField] private float crouchTransitionSpeed = 5f;
+
     // The y value for the character controller center vector.
     private float _crouchCenter;
     private float _standCenter;
@@ -15,13 +18,16 @@ public class PlayerCrouch : MonoBehaviour
     private float _modelCrouchScale = 0.5f;
     private float _modelStandScale = 1f;
 
+    // For smooth transition.
+    private float _currentHeight;
+    private float _currentCenter;
+    private float _currentScale;
+    private float _currentCameraHeight;
+
     // Component references.
     private CharacterController _characterController;
     private Transform _modelTransform;
     private Transform _cameraTransform;
-
-    // Keep track of stance.
-    private bool _isCrouching;
 
     /// <summary>
     /// Provides the player crouch component with everything it needs to work.
@@ -38,8 +44,11 @@ public class PlayerCrouch : MonoBehaviour
         _crouchCenter = crouchHeight / 2;
         _standCenter = standHeight / 2;
 
-        // Player is standing by default.
-        _isCrouching = false;
+        // Set default values for smooth transition variables.
+        _currentHeight = _characterController.height;
+        _currentCenter = _characterController.center.y;
+        _currentScale = _modelTransform.localScale.y;
+        _currentCameraHeight = _cameraTransform.localPosition.y;
     }
 
     /// <summary>
@@ -51,22 +60,20 @@ public class PlayerCrouch : MonoBehaviour
     /// <param name="isGrounded"> Grounded bool from the character controller. </param>
     public void UpdateStance(float deltaTime, bool crouchPressed, bool isGrounded)
     {
-        // If the player is in the air, do nothing.
-        if (!isGrounded)
+        // Early exit if already in the target stance.
+        if (!crouchPressed && Mathf.Approximately(_currentHeight, standHeight) && isGrounded)
             return;
-
-        // If the stance of the player hasn't changed, return.
-        if (_isCrouching == crouchPressed)
+        if (crouchPressed && Mathf.Approximately(_currentHeight, crouchHeight))
             return;
-
-        // Set stance.
-        _isCrouching = crouchPressed;
 
         // Targets that will change depending on stance.
         float heightTarget;
         float centerTarget;
         float scaleTarget;
         float cameraHeightTarget;
+
+        // For smooth transition.
+        float crouchDelta = deltaTime * crouchTransitionSpeed;
 
         // If the player is holding crouch, use crouch variables.
         if(crouchPressed)
@@ -85,12 +92,24 @@ public class PlayerCrouch : MonoBehaviour
             cameraHeightTarget = cameraStandHeight;
         }
 
+        // Smooth Transition.
+        _currentHeight = Mathf.Lerp(_currentHeight, heightTarget, crouchDelta);
+        _currentCenter = Mathf.Lerp(_currentCenter, centerTarget, crouchDelta);
+        _currentScale = Mathf.Lerp(_currentScale, scaleTarget, crouchDelta);
+        _currentCameraHeight = Mathf.Lerp(_currentCameraHeight, cameraHeightTarget, crouchDelta);
+
+        // Clamp to ensure exact match when very close.
+        if (Mathf.Abs(_currentHeight - heightTarget) < 0.001f) _currentHeight = heightTarget;
+        if (Mathf.Abs(_currentCenter - centerTarget) < 0.001f) _currentCenter = centerTarget;
+        if (Mathf.Abs(_currentScale - scaleTarget) < 0.001f) _currentScale = scaleTarget;
+        if (Mathf.Abs(_currentCameraHeight - cameraHeightTarget) < 0.001f) _currentCameraHeight = cameraHeightTarget;
+
         // Set the player's height and center.
-        _characterController.height = heightTarget;
-        _characterController.center = new Vector3(0f, centerTarget, 0f);
+        _characterController.height = _currentHeight;
+        _characterController.center = new Vector3(0f, _currentCenter, 0f);
         // Scale the model on the y-axis.
-        _modelTransform.localScale = new Vector3(_modelTransform.localScale.x, scaleTarget, _modelTransform.localScale.z);
+        _modelTransform.localScale = new Vector3(_modelTransform.localScale.x, _currentScale, _modelTransform.localScale.z);
         // Set the height of the camera.
-        _cameraTransform.localPosition = new Vector3(_cameraTransform.localPosition.x, cameraHeightTarget, _cameraTransform.localPosition.z);
+        _cameraTransform.localPosition = new Vector3(_cameraTransform.localPosition.x, _currentCameraHeight, _cameraTransform.localPosition.z);
     }
 }
