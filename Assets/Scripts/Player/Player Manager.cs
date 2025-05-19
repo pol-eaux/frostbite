@@ -8,16 +8,23 @@ using UnityEngine.InputSystem;
 /// </summary>
 public class PlayerManager : MonoBehaviour
 {
-    [Header("Components")]
+    [Header("Input Settings")]
+    [Tooltip("When true, crouch is a toggle, when false crouch is held.")]
+    [SerializeField] private bool toggleCrouch = false;
+
+    [Header("Script Components")]
     [SerializeField] private InputActionAsset inputActions;
     [SerializeField] private PlayerMovement playerMovement;
-    [SerializeField] private PlayerLook playerLook;
     [SerializeField] private PlayerJump playerJump;
     [SerializeField] private PlayerCrouch playerCrouch;
 
+    [Space]
+    [SerializeField] private CameraLook cameraLook;
+    [SerializeField] private CameraBob cameraBob;
+
     [Header("Transforms")]
     [SerializeField] private Transform modelTransform;
-    [SerializeField] private Transform cameraTransform;
+    [SerializeField] private Transform cameraAnchorTransform;
 
     private CharacterController _characterController;
 
@@ -32,14 +39,24 @@ public class PlayerManager : MonoBehaviour
     private Vector2 _moveInput;
     private Vector2 _lookInput;
 
+    // Input Booleans
     // Jump input.
     private bool _jumpPressed;
     // Crouch input.
-    private bool _crouchPressed;
+    private bool _crouchHeld;
     // Sprint input.
-    private bool _sprintPressed;
+    private bool _sprintHeld;
     // Is the player grounded this frame?
     private bool _isGrounded;
+
+    // State Booleans
+    // Is the player crouching this frame?
+    private bool _isCrouching;
+    private bool _crouchInputPrevious;
+    // Is the player sprinting this frame?
+    private bool _isSprinting;
+    // Is the player jumping this frame?
+    private bool _isJumping;
 
     // For acceleration.
     private Vector3 currentVelocity = Vector3.zero;
@@ -62,14 +79,22 @@ public class PlayerManager : MonoBehaviour
         // Get character controller.
         _characterController = GetComponent<CharacterController>();
 
-        // Initialize bools.
+        // Input Bools
         _isGrounded = _characterController.isGrounded;
         _jumpPressed = false;
-        _crouchPressed = false;
-        _sprintPressed = false;
+        _crouchHeld = false;
+        _sprintHeld = false;
 
-        playerLook.Initialize(this.transform);
-        playerCrouch.Initialize(_characterController, modelTransform, cameraTransform);
+        // State Bools
+        _isCrouching = false;
+        _crouchInputPrevious = false;
+        _isSprinting = false;
+        _isJumping = false;
+
+        // Initialize component scripts.
+        cameraLook.Initialize(this.transform);
+        playerCrouch.Initialize(_characterController, modelTransform, cameraAnchorTransform);
+        cameraBob.Initialize(_characterController);
     }
 
     private void Start()
@@ -81,6 +106,7 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
+        // Get global delta time.
         float deltaTime = Time.deltaTime;
         
         // Update all needed variables for this frame.
@@ -90,6 +116,7 @@ public class PlayerManager : MonoBehaviour
         Move(deltaTime);
         Look(deltaTime);
         Crouch(deltaTime);
+        Bob(deltaTime);
     }
 
     private void OnDisable()
@@ -107,9 +134,33 @@ public class PlayerManager : MonoBehaviour
         // Was jump pressed this frame?
         _jumpPressed = _jumpAction.WasPressedThisFrame();
         // Was crouch held this frame?
-        _crouchPressed = _crouchAction.IsPressed();
+        _crouchHeld = _crouchAction.IsPressed();
+        // Allows the player to toggle crouch but also hold the crouch button.
+        bool crouchJustPressed = _crouchHeld && !_crouchInputPrevious;
         // Was sprint held this frame?
-        _sprintPressed = _sprintAction.IsPressed();
+        _sprintHeld = _sprintAction.IsPressed();
+
+        // If toggle crouch, flip value.
+        if(toggleCrouch)
+        {
+            if(crouchJustPressed)
+            {
+                _isCrouching = !_isCrouching;
+            }
+        }
+        // Else hold crouch.
+        else
+        {
+            _isCrouching = _crouchHeld;
+        }
+
+        // Hold to sprint.
+        _isSprinting = _sprintHeld;
+        // Press to jump.
+        _isJumping = _jumpPressed;
+
+        // Set previous crouch input.
+        _crouchInputPrevious = _crouchHeld;
 
         // Read inputs:
         _moveInput = _moveAction.ReadValue<Vector2>();
@@ -124,9 +175,9 @@ public class PlayerManager : MonoBehaviour
     private void Move(float deltaTime)
     {
         // Get vertical movement (apply gravity and or jump).
-        float verticalVelocity = playerJump.UpdateGravity(deltaTime, _jumpPressed, _isGrounded, _crouchPressed);
+        float verticalVelocity = playerJump.UpdateGravity(deltaTime, _isJumping, _isGrounded, _isCrouching);
         // Get horizontal movement.
-        Vector3 horizontalMovement = playerMovement.UpdateMove(deltaTime, _moveInput, ref currentVelocity, _crouchPressed, _sprintPressed);
+        Vector3 horizontalMovement = playerMovement.UpdateMove(deltaTime, _moveInput, ref currentVelocity, _isCrouching, _isSprinting, _isGrounded);
         // Combine them for the final movement vector.
         Vector3 finalMovement = new Vector3(horizontalMovement.x, verticalVelocity * deltaTime, horizontalMovement.z);
 
@@ -142,7 +193,7 @@ public class PlayerManager : MonoBehaviour
     private void Look(float deltaTime)
     {
         // Rotate the player camera along the x-axis and this by the y-axis by calling the update look funcion in the player look component.
-        playerLook.UpdateLook(deltaTime, _lookInput);
+        cameraLook.UpdateLook(deltaTime, _lookInput);
     }
 
     /// <summary>
@@ -152,6 +203,16 @@ public class PlayerManager : MonoBehaviour
     private void Crouch(float deltaTime)
     {
         // Change the character controller height, center, model scale, and camera height from this funciton.
-        playerCrouch.UpdateStance(deltaTime, _crouchPressed, _isGrounded);
+        playerCrouch.UpdateStance(deltaTime, _isCrouching, _isGrounded);
+    }
+
+    /// <summary>
+    /// Call the update bob function from the camera bob component.
+    /// </summary>
+    /// <param name="deltaTime"> Global delta time </param>
+    private void Bob(float deltaTime)
+    {
+        // Change the local position of the camera bob object.
+        cameraBob.UpdateBob(deltaTime, _isGrounded, _isCrouching, _isSprinting);
     }
 }

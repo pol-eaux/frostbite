@@ -4,13 +4,17 @@ public class PlayerCrouch : MonoBehaviour
 {
     [SerializeField] private float crouchHeight = 1f;
     [SerializeField] private float cameraCrouchHeight = 0.75f;
+
+    [Space]
     [SerializeField] private float standHeight = 2f;
     [SerializeField] private float cameraStandHeight = 1.5f;
 
     [Space]
+    [Tooltip("How fast the player lerps to the crouch position.")]
     [SerializeField] private float crouchTransitionSpeed = 5f;
 
     [Space]
+    [Tooltip("Size of the radius of the check sphere for checking if the player can stand.")]
     [SerializeField] private float headCheckTolerance = 0.51f;
 
     // The y value for the character controller center vector.
@@ -65,9 +69,9 @@ public class PlayerCrouch : MonoBehaviour
     /// Crouching only works if the palyer is grounded.
     /// </summary>
     /// <param name="deltaTime"> Global delta time. </param>
-    /// <param name="crouchPressed"> Crouch input. </param>
+    /// <param name="isCrouching"> Crouch input. </param>
     /// <param name="isGrounded"> Grounded bool from the character controller. </param>
-    public void UpdateStance(float deltaTime, bool crouchPressed, bool isGrounded)
+    public void UpdateStance(float deltaTime, bool isCrouching, bool isGrounded)
     {
         // Calculate where the ray should cast from.
         Vector3 castOrigin = transform.position + new Vector3(0, standHeight - headCheckTolerance, 0);
@@ -75,9 +79,9 @@ public class PlayerCrouch : MonoBehaviour
         bool blocked = Physics.CheckSphere(castOrigin, headCheckTolerance, _layerMask, QueryTriggerInteraction.Ignore);
 
         // Early exit if already in the target stance.
-        if (!crouchPressed && Mathf.Approximately(_currentHeight, standHeight))
+        if (!isCrouching && Mathf.Approximately(_currentHeight, standHeight))
             return;
-        if (crouchPressed && Mathf.Approximately(_currentHeight, crouchHeight))
+        if (isCrouching && Mathf.Approximately(_currentHeight, crouchHeight))
             return;
 
         // Targets that will change depending on stance.
@@ -91,7 +95,7 @@ public class PlayerCrouch : MonoBehaviour
 
         // If the player is holding crouch and is grounded, use crouch variables.
         // If the player is blocked from above, the player should stay crouched.
-        if((crouchPressed && isGrounded) || blocked)
+        if((isCrouching && isGrounded) || blocked)
         {
             heightTarget = crouchHeight;
             centerTarget = _crouchCenter;

@@ -1,10 +1,12 @@
 using UnityEngine;
-using UnityEngine.LowLevel;
 
-public class PlayerLook : MonoBehaviour
+public class CameraLook : MonoBehaviour
 {
+    [Tooltip("How quickly the camera rotates based on input.")]
     [SerializeField] float sensitivity = 10f;
+    [Tooltip("How far down the player can look.")]
     [SerializeField] float minViewAngle = -90f;
+    [Tooltip("How far up the player can look.")]
     [SerializeField] float maxViewAngle = 90f;
 
     private float _xRotation = 0f;
@@ -47,6 +49,5 @@ public class PlayerLook : MonoBehaviour
         transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
         // Apply rotation to player.
         _playerTransform.localRotation = Quaternion.Euler(0f, _yRotation, 0f);
-
     }
 }

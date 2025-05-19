@@ -302,13 +302,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c05eceb8ab190c4684d39f6b3646c62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  toggleCrouch: 1
   inputActions: {fileID: -944628639613478452, guid: 79624c36864486349a38c4a95fc91233, type: 3}
   playerMovement: {fileID: 81316110}
-  playerLook: {fileID: 1605630380}
   playerJump: {fileID: 81316111}
   playerCrouch: {fileID: 81316112}
+  cameraLook: {fileID: 1605630380}
+  cameraBob: {fileID: 108149450}
   modelTransform: {fileID: 1855795980}
-  cameraTransform: {fileID: 1605630379}
+  cameraAnchorTransform: {fileID: 1605630379}
 --- !u!114 &81316110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -368,6 +370,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 108149449}
+  - component: {fileID: 108149450}
   m_Layer: 3
   m_Name: Camera Bob
   m_TagString: Player
@@ -391,6 +394,24 @@ Transform:
   - {fileID: 1930451904}
   m_Father: {fileID: 1963376535}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &108149450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108149448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75746e72590c0b44c86e7054d0713497, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableHeadbob: 1
+  walkBobFrequency: 10
+  crouchWalkBobFrequency: 5
+  sprintBobFrequency: 12
+  amplitude: 0.05
+  resetSmoothing: 5
 --- !u!1 &308462174
 GameObject:
   m_ObjectHideFlags: 0
@@ -2192,6 +2213,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1963376535}
+  - component: {fileID: 1963376536}
   m_Layer: 3
   m_Name: Camera Spring
   m_TagString: Player
@@ -2215,6 +2237,18 @@ Transform:
   - {fileID: 108149449}
   m_Father: {fileID: 1605630379}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1963376536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1963376534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b93c5049719defd43bbf0acbe4f01d06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2062204802
 GameObject:
   m_ObjectHideFlags: 0
