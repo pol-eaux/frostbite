@@ -21,6 +21,7 @@ public class PlayerManager : MonoBehaviour
     [Space]
     [SerializeField] private CameraLook cameraLook;
     [SerializeField] private CameraBob cameraBob;
+    [SerializeField] private CameraRaycasting cameraRaycasting;
 
     [Header("Transforms")]
     [SerializeField] private Transform modelTransform;
@@ -34,6 +35,7 @@ public class PlayerManager : MonoBehaviour
     private InputAction _jumpAction;
     private InputAction _crouchAction;
     private InputAction _sprintAction;
+    private InputAction _interactAction;
 
     // Inputs from the input system.
     private Vector2 _moveInput;
@@ -48,6 +50,8 @@ public class PlayerManager : MonoBehaviour
     private bool _sprintHeld;
     // Is the player grounded this frame?
     private bool _isGrounded;
+    // Interact input.
+    private bool _interactPressed;
 
     // State Booleans
     // Is the player crouching this frame?
@@ -57,6 +61,8 @@ public class PlayerManager : MonoBehaviour
     private bool _isSprinting;
     // Is the player jumping this frame?
     private bool _isJumping;
+    // Is the player interacting this frame?
+    private bool _isInteracting;
 
     // For acceleration.
     private Vector3 currentVelocity = Vector3.zero;
@@ -75,6 +81,7 @@ public class PlayerManager : MonoBehaviour
         _jumpAction = gameplayMap.FindAction("Jump");
         _crouchAction = gameplayMap.FindAction("Crouch");
         _sprintAction = gameplayMap.FindAction("Sprint");
+        _interactAction = gameplayMap.FindAction("Interact");
 
         // Get character controller.
         _characterController = GetComponent<CharacterController>();
@@ -84,12 +91,14 @@ public class PlayerManager : MonoBehaviour
         _jumpPressed = false;
         _crouchHeld = false;
         _sprintHeld = false;
+        _interactPressed = false;
 
         // State Bools
         _isCrouching = false;
         _crouchInputPrevious = false;
         _isSprinting = false;
         _isJumping = false;
+        _isInteracting = false;
 
         // Initialize component scripts.
         cameraLook.Initialize(this.transform);
@@ -117,6 +126,7 @@ public class PlayerManager : MonoBehaviour
         Look(deltaTime);
         Crouch(deltaTime);
         Bob(deltaTime);
+        Raycast(deltaTime);
     }
 
     private void OnDisable()
@@ -161,6 +171,10 @@ public class PlayerManager : MonoBehaviour
 
         // Set previous crouch input.
         _crouchInputPrevious = _crouchHeld;
+
+        // Get interaction.
+        _interactPressed = _interactAction.WasPressedThisFrame();
+        _isInteracting = _interactPressed;
 
         // Read inputs:
         _moveInput = _moveAction.ReadValue<Vector2>();
@@ -214,5 +228,14 @@ public class PlayerManager : MonoBehaviour
     {
         // Change the local position of the camera bob object.
         cameraBob.UpdateBob(deltaTime, _isGrounded, _isCrouching, _isSprinting);
+    }
+
+    /// <summary>
+    /// Call the update raycast function from the camera raycasting component.
+    /// </summary>
+    /// <param name="deltaTime"> Global delta time </param>
+    private void Raycast(float deltaTime)
+    {
+        cameraRaycasting.UpdateRaycast(deltaTime, _isInteracting);
     }
 }
