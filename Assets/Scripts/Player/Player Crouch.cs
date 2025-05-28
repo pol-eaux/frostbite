@@ -39,6 +39,9 @@ public class PlayerCrouch : MonoBehaviour
     // Collision.
     private int _layerMask;
 
+    // Is the player blocked from standing?
+    private bool _isBlocked;
+
     /// <summary>
     /// Provides the player crouch component with everything it needs to work.
     /// The character controller is needed to modify height and center values.
@@ -62,6 +65,8 @@ public class PlayerCrouch : MonoBehaviour
 
         // Prevent the head checker from interacting with the player.
         _layerMask = ~LayerMask.GetMask("Player");
+
+        _isBlocked = false;
     }
 
     /// <summary>
@@ -73,10 +78,8 @@ public class PlayerCrouch : MonoBehaviour
     /// <param name="isGrounded"> Grounded bool from the character controller. </param>
     public void UpdateStance(float deltaTime, bool isCrouching, bool isGrounded)
     {
-        // Calculate where the ray should cast from.
-        Vector3 castOrigin = transform.position + new Vector3(0, standHeight - headCheckTolerance, 0);
-        // Check if the player is blocked from standing.
-        bool blocked = Physics.CheckSphere(castOrigin, headCheckTolerance, _layerMask, QueryTriggerInteraction.Ignore);
+        // Calculate if the player is blocked from above.
+        bool blocked = UpdateIsBlocked();
 
         // Early exit if already in the target stance.
         if (!isCrouching && Mathf.Approximately(_currentHeight, standHeight))
@@ -101,6 +104,14 @@ public class PlayerCrouch : MonoBehaviour
             centerTarget = _crouchCenter;
             scaleTarget = _modelCrouchScale;
             cameraHeightTarget = cameraCrouchHeight;
+            if(blocked)
+            {
+                _isBlocked = true;
+            }
+            else
+            {
+                _isBlocked = false;
+            }
         }
         // Otherwise the player should stand, use stand variables.
         else
@@ -109,6 +120,7 @@ public class PlayerCrouch : MonoBehaviour
             centerTarget = _standCenter;
             scaleTarget = _modelStandScale;
             cameraHeightTarget = cameraStandHeight;
+            _isBlocked = false;
         }
 
         // Smooth Transition.
@@ -131,4 +143,28 @@ public class PlayerCrouch : MonoBehaviour
         // Set the height of the camera.
         _cameraTransform.localPosition = new Vector3(_cameraTransform.localPosition.x, _currentCameraHeight, _cameraTransform.localPosition.z);
     }
+
+    /// <summary>
+    /// Update if the player is blocked from above.
+    /// </summary>
+    /// <returns> True if the player is blocked, false if not. </returns>
+    private bool UpdateIsBlocked()
+    {
+        // Calculate where the ray should cast from.
+        Vector3 castOrigin = transform.position + new Vector3(0, standHeight - headCheckTolerance, 0);
+        // Check if the player is blocked from standing.
+        bool blocked = Physics.CheckSphere(castOrigin, headCheckTolerance, _layerMask, QueryTriggerInteraction.Ignore);
+
+        return blocked;
+    }
+
+    /// <summary>
+    /// Public getter for if the player is blocked from above and can stand or not.
+    /// </summary>
+    /// <returns></returns>
+    public bool GetIsBlocked()
+    {
+        return _isBlocked = UpdateIsBlocked();
+    }
+
 }

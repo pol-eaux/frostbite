@@ -155,7 +155,17 @@ public class PlayerManager : MonoBehaviour
         {
             if(crouchJustPressed)
             {
-                _isCrouching = !_isCrouching;
+                // If the player is croucing in the player crouch script, stay crouching.
+                // This prevents the crouch bool from being flipped if the player is blocked from standing.
+                if(playerCrouch.GetIsBlocked())
+                {
+                    _isCrouching = true;
+                }
+                // Otherwise flip the bool.
+                else
+                {
+                    _isCrouching = !_isCrouching;
+                }
             }
         }
         // Else hold crouch.
